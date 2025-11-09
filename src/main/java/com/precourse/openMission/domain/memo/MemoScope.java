@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MemoScope {
     ONLY_ME("나만보기"),
-    EVERYONE("전체공개");
+    PUBLIC("전체공개");
 
     private final String scope;
 }

@@ -1,4 +1,4 @@
-package com.precourse.openMission.web;
+package com.precourse.openMission.unit.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -11,6 +11,7 @@ import com.precourse.openMission.domain.memo.MemoScope;
 import com.precourse.openMission.domain.user.User;
 import com.precourse.openMission.exception.GlobalExceptionHandler;
 import com.precourse.openMission.service.MemoService;
+import com.precourse.openMission.web.MemoController;
 import com.precourse.openMission.web.dto.memo.MemoListResponseDto;
 import com.precourse.openMission.web.dto.memo.MemoResponseDto;
 import com.precourse.openMission.web.dto.memo.MemoSaveRequestDto;

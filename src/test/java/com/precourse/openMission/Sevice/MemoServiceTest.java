@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +38,8 @@ public class MemoServiceTest {
         Long targetId = 1L;
         String expectedContent = "테스트 내용";
 
-        Memo mockMemo = createMemo(MemoScope.EVERYONE, expectedContent);
+        Memo mockMemo = createMemo(MemoScope.PUBLIC, expectedContent);
+        ReflectionTestUtils.setField(mockMemo, "id", 1L);
         doReturn(Optional.of(mockMemo)).when(memoRepository).findById(targetId);
 
         // when
@@ -66,8 +68,8 @@ public class MemoServiceTest {
     @Test
     void 전체_공개_게시글_조회_테스트(){
         // given
-        Memo memo1 = createMemo(MemoScope.EVERYONE, "공개글 1");
-        Memo memo2 = createMemo(MemoScope.EVERYONE, "공개글 2");
+        Memo memo1 = createMemo(MemoScope.PUBLIC, "공개글 1");
+        Memo memo2 = createMemo(MemoScope.PUBLIC, "공개글 2");
 
         List<Memo> mockPublicMemos = List.of(memo1, memo2);
         doReturn(mockPublicMemos).when(memoRepository).findAllPublicDesc();

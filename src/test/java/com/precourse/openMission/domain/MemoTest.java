@@ -13,7 +13,6 @@ import java.time.Month;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MemoTest {
-    // TODO: 업데이트 메소드 단위 테스트
     private Memo memo;
     private User user;
 
@@ -23,7 +22,7 @@ public class MemoTest {
         memo = Memo.builder()
                 .user(user)
                 .content("test")
-                .scope(String.valueOf(MemoScope.ONLY_ME))
+                .scope(String.valueOf(MemoScope.SECRET))
                 .memoDate(LocalDateTime.of(2025, Month.NOVEMBER, 7, 15, 30))
                 .build();
     }
@@ -33,7 +32,7 @@ public class MemoTest {
     void update_테스트(){
         // given
         String updatedContent = "updated test";
-        MemoScope updatedScope = MemoScope.EVERYONE;
+        MemoScope updatedScope = MemoScope.PUBLIC;
         LocalDateTime updatedDate = LocalDateTime.of(2025, Month.NOVEMBER, 10, 15, 30);
 
         // when

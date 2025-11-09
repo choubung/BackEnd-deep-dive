@@ -4,14 +4,17 @@ import com.precourse.openMission.domain.memo.Memo;
 import com.precourse.openMission.domain.memo.MemoRepository;
 import com.precourse.openMission.domain.memo.MemoScope;
 import com.precourse.openMission.domain.user.User;
+import com.precourse.openMission.domain.user.UserRepository;
 import com.precourse.openMission.service.MemoService;
 import com.precourse.openMission.web.dto.memo.MemoListResponseDto;
 import com.precourse.openMission.web.dto.memo.MemoResponseDto;
+import com.precourse.openMission.web.dto.memo.MemoSaveRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -25,11 +28,42 @@ import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
 public class MemoServiceTest {
+    static final LocalDateTime dateTime = LocalDateTime.parse("2025-10-09T15:30:00");
+
     @Mock
     private MemoRepository memoRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private MemoService memoService;
+
+    // TODO:저장 테스트
+    @Test
+    void 메모_저장_테스트(){
+        // given
+        Long expectedMemoId = 10L;
+
+        String content = "test";
+        Long userId = 1L;
+        MemoScope scope = MemoScope.PUBLIC;
+        MemoSaveRequestDto memoSaveRequestDto = new MemoSaveRequestDto(content, userId, scope, dateTime);
+
+        User user = new User();
+        ReflectionTestUtils.setField(user, "id", userId);
+        doReturn(Optional.of(user)).when(userRepository).findById(userId);
+
+        Memo memo = createMemo(user, scope, content);
+        ReflectionTestUtils.setField(memo, "id", 10L);
+        doReturn(memo).when(memoRepository).save(any());
+
+        // when
+        final Long savedMemoId = memoService.saveMemo(memoSaveRequestDto);
+
+        // then
+        assertThat(savedMemoId).isEqualTo(expectedMemoId);
+    }
 
     @DisplayName("게시글 아이디로 특정 게시글을 조회한다.")
     @Test
@@ -83,12 +117,24 @@ public class MemoServiceTest {
         assertThat(memoListResponseDtos.get(1).getContent()).isEqualTo("공개글 2");
     }
 
+    // TODO: 수정 테스트
+    // TODO: 삭제 테스트
+
     private Memo createMemo(MemoScope scope, String content) {
         return Memo.builder()
                 .user(new User())
                 .scope(String.valueOf(scope))
                 .content(content)
-                .memoDate(LocalDateTime.now())
+                .memoDate(dateTime)
+                .build();
+    }
+
+    private Memo createMemo(User user, MemoScope scope, String content) {
+        return Memo.builder()
+                .user(user)
+                .scope(String.valueOf(scope))
+                .content(content)
+                .memoDate(dateTime)
                 .build();
     }
 }

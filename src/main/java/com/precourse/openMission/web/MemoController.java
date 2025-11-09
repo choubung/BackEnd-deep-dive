@@ -3,6 +3,7 @@ package com.precourse.openMission.web;
 import com.precourse.openMission.service.MemoService;
 import com.precourse.openMission.web.dto.memo.MemoListResponseDto;
 import com.precourse.openMission.web.dto.memo.MemoResponseDto;
+import com.precourse.openMission.web.dto.memo.MemoSaveRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,10 @@ public class MemoController {
     private final MemoService memoService; // 의존성 주입
 
     // TODO: @PostMapping
+    @PostMapping
+    public Long saveMemo(@RequestBody MemoSaveRequestDto requestDto) {
+        return memoService.saveMemo(requestDto);
+    }
 
     // 전체 게시글 목록 조회
     @GetMapping

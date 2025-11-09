@@ -2,21 +2,30 @@ package com.precourse.openMission.service;
 
 import com.precourse.openMission.domain.memo.Memo;
 import com.precourse.openMission.domain.memo.MemoRepository;
+import com.precourse.openMission.domain.user.User;
+import com.precourse.openMission.domain.user.UserRepository;
 import com.precourse.openMission.web.dto.memo.MemoListResponseDto;
 import com.precourse.openMission.web.dto.memo.MemoResponseDto;
+import com.precourse.openMission.web.dto.memo.MemoSaveRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class MemoService {
     private final MemoRepository memoRepository; // 의존성 주입
+    private final UserRepository userRepository;
 
-    // TODO: 저장
+    @Transactional
+    public Long saveMemo(MemoSaveRequestDto requestDto) { // TODO 로그인한 사용자로 자동 등록 필요
+        Memo memo = createMemo(requestDto);
+        return memoRepository.save(memo).getId();
+    }
 
     // TODO: 업데이트
 
@@ -35,4 +44,15 @@ public class MemoService {
     }
 
     // TODO: 삭제
+
+    private Memo createMemo(MemoSaveRequestDto requestDto) {
+        Optional<User> user = userRepository.findById(requestDto.getUserId());
+
+        return Memo.builder()
+                .user(user.orElse(null))
+                .content(requestDto.getContent())
+                .scope(String.valueOf(requestDto.getScope()))
+                .memoDate(requestDto.getMemoDate())
+                .build();
+    }
 }

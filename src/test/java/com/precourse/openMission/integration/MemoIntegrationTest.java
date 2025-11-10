@@ -1,5 +1,6 @@
 package com.precourse.openMission.integration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.precourse.openMission.domain.memo.Memo;
@@ -32,6 +33,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -121,17 +123,9 @@ public class MemoIntegrationTest {
     @Test
     public void 메모_갱신_통합_테스트() throws Exception {
         // given
-        LocalDateTime date = LocalDateTime.of(2025, 11, 10, 14, 57);
-        Memo savedMemo = memoRepository.save(Memo.builder()
-                .content("test 내용")
-                .user(user)
-                .scope(MemoScope.PUBLIC.name())
-                .memoDate(date)
-                .build());
-
-        Long targetId = savedMemo.getId();
+        Long targetId = publicMemo.getId();
         String expectedContent = "업데이트된 test 내용";
-        LocalDateTime expectedDate = date.plusDays(1);
+        LocalDateTime expectedDate = LocalDateTime.of(2025, 11, 10, 14, 57);
 
         MemoUpdateRequestDto requestDto = new MemoUpdateRequestDto(expectedContent, MemoScope.PUBLIC, expectedDate);
 
@@ -149,6 +143,29 @@ public class MemoIntegrationTest {
         Optional<Memo> memo = memoRepository.findById(targetId);
         assertThat(memo.get().getContent()).isEqualTo(expectedContent);
         assertThat(memo.get().getMemoDate()).isEqualTo(expectedDate);
+    }
+
+    @DisplayName("존재하지 않는 메모 아이디로 메모를 갱신하려했을 때, 400 Error를 반환하는지 확인한다.")
+    @Test
+    public void 존재하지_않는_메모_갱신시_예외가_발생한다() throws Exception {
+        // given
+        memoRepository.delete(publicMemo);
+        Long invalidId = publicMemo.getId();
+
+        String expectedContent = "업데이트된 test 내용";
+        LocalDateTime expectedDate = LocalDateTime.of(2025, 11, 10, 14, 57);
+
+        MemoUpdateRequestDto requestDto = new MemoUpdateRequestDto(expectedContent, MemoScope.PUBLIC, expectedDate);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        String json = objectMapper.writeValueAsString(requestDto);
+
+        // when, then
+        mockMvc.perform(put("/home/memos/{invalidId}", invalidId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
     }
 
     @DisplayName("전체 공개 메모를 모두 조회한다.")
@@ -172,7 +189,7 @@ public class MemoIntegrationTest {
     @Test
     public void 특정_메모_조회_통합_테스트() throws Exception {
         // given
-        Long targetId = memoRepository.findAll().get(0).getId();
+        Long targetId = publicMemo.getId();
         String expectedContent = memoRepository.findById(targetId).get().getContent();
 
         // when
@@ -182,6 +199,18 @@ public class MemoIntegrationTest {
         resultActions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.memoId").value(targetId))
                 .andExpect(jsonPath("$.content").value(expectedContent));
+    }
+
+    @DisplayName("존재하지 않는 메모 아이디로 메모를 조회했을 때, 400 Error를 반환하는지 확인한다.")
+    @Test
+    void 존재하지_않는_메모_조회시_예외가_발생한다() throws Exception {
+        // given
+        memoRepository.delete(publicMemo);
+        Long invalidId = publicMemo.getId();
+
+        // when, then
+        mockMvc.perform(get("/home/memos/{invalidId}", invalidId))
+                .andExpect(status().isBadRequest());
     }
 
     @DisplayName("메모 아이디를 받아 해당 메모를 삭제한다.")
@@ -196,5 +225,17 @@ public class MemoIntegrationTest {
         // then
         resultActions.andExpect(status().isNoContent());
         assertThat(memoRepository.findById(targetId)).isEqualTo(Optional.empty());
+    }
+
+    @DisplayName("존재하지 않는 메모 아이디로 메모를 삭제했을 때, 400 Error를 반환하는지 확인한다.")
+    @Test
+    void 존재하지_않는_메모_삭제시_예외가_발생한다() throws Exception {
+        // given
+        memoRepository.delete(publicMemo);
+        Long invalidId = publicMemo.getId();
+
+        // when, then
+        mockMvc.perform(delete("/home/memos/{invalidId}", invalidId))
+                .andExpect(status().isBadRequest());
     }
 }

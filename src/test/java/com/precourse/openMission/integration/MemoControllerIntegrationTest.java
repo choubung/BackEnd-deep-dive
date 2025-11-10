@@ -9,6 +9,7 @@ import com.precourse.openMission.domain.user.Role;
 import com.precourse.openMission.domain.user.User;
 import com.precourse.openMission.domain.user.UserRepository;
 import com.precourse.openMission.web.dto.memo.MemoSaveRequestDto;
+import com.precourse.openMission.web.dto.memo.MemoUpdateRequestDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -91,5 +93,38 @@ public class MemoControllerIntegrationTest {
         assertThat(memo.getContent()).isEqualTo(content);
         assertThat(memo.getScope()).isEqualTo(scope);
         assertThat(memo.getMemoDate()).isEqualTo(date);
+    }
+
+    @Test
+    public void 메모_갱신_통합_테스트() throws Exception {
+        // given
+        LocalDateTime date = LocalDateTime.of(2025, 11, 10, 14, 57);
+        Memo savedMemo = memoRepository.save(Memo.builder()
+                .content("test 내용")
+                .user(user)
+                .scope(String.valueOf(MemoScope.PUBLIC))
+                .memoDate(date)
+                .build());
+
+        Long targetId = savedMemo.getId();
+        String expectedContent = "업데이트된 test 내용";
+        LocalDateTime expectedDate = date.plusDays(1);
+
+        MemoUpdateRequestDto requestDto = new MemoUpdateRequestDto(expectedContent, MemoScope.PUBLIC, expectedDate);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        String json = objectMapper.writeValueAsString(requestDto);
+
+        // when
+        mockMvc.perform(put("/home/memos/{targetId}", targetId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk());
+
+        // then
+        List<Memo> memos = memoRepository.findAll();
+        assertThat(memos.get(0).getContent()).isEqualTo(expectedContent);
+        assertThat(memos.get(0).getMemoDate()).isEqualTo(expectedDate);
     }
 }

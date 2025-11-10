@@ -12,6 +12,7 @@ import com.precourse.openMission.web.dto.memo.MemoSaveRequestDto;
 import com.precourse.openMission.web.dto.memo.MemoUpdateRequestDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,21 +20,27 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class MemoIntegrationTest {
     private User user;
+    private Memo publicMemo;
+    private Memo secretMemo;
 
     @Autowired
     private MemoRepository memoRepository;
@@ -58,6 +65,22 @@ public class MemoIntegrationTest {
                 .build();
 
         userRepository.save(user);
+
+        publicMemo = memoRepository.save(Memo.builder()
+                .content("[공개글] 기존 테스트 데이터 1")
+                .user(user)
+                .scope(MemoScope.PUBLIC.name())
+                .memoDate(LocalDateTime.now())
+                .build()
+        );
+
+        secretMemo = memoRepository.save(Memo.builder()
+                .content("[비밀글] 기존 테스트 데이터 2")
+                .user(user)
+                .scope(MemoScope.SECRET.name())
+                .memoDate(LocalDateTime.now())
+                .build()
+        );
     }
 
     @AfterEach
@@ -80,16 +103,16 @@ public class MemoIntegrationTest {
         String json = objectMapper.writeValueAsString(requestDto);
 
         // when
-        mockMvc.perform(post("/home/memos")
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+        ResultActions resultActions = mockMvc.perform(post("/home/memos")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk());
 
-        //then
-        List<Memo> memos = memoRepository.findAll();
-        assertThat(memos).hasSize(1);
+        MvcResult mvcResult = resultActions.andReturn();
+        Long memoId = Long.parseLong(mvcResult.getResponse().getContentAsString());
 
-        Memo memo = memos.get(0);
+        //then
+        Memo memo = memoRepository.findById(memoId).orElse(null);
         assertThat(memo.getContent()).isEqualTo(content);
         assertThat(memo.getScope()).isEqualTo(scope);
         assertThat(memo.getMemoDate()).isEqualTo(date);
@@ -102,7 +125,7 @@ public class MemoIntegrationTest {
         Memo savedMemo = memoRepository.save(Memo.builder()
                 .content("test 내용")
                 .user(user)
-                .scope(String.valueOf(MemoScope.PUBLIC))
+                .scope(MemoScope.PUBLIC.name())
                 .memoDate(date)
                 .build());
 
@@ -123,8 +146,55 @@ public class MemoIntegrationTest {
                 .andExpect(status().isOk());
 
         // then
-        List<Memo> memos = memoRepository.findAll();
-        assertThat(memos.get(0).getContent()).isEqualTo(expectedContent);
-        assertThat(memos.get(0).getMemoDate()).isEqualTo(expectedDate);
+        Optional<Memo> memo = memoRepository.findById(targetId);
+        assertThat(memo.get().getContent()).isEqualTo(expectedContent);
+        assertThat(memo.get().getMemoDate()).isEqualTo(expectedDate);
+    }
+
+    @DisplayName("전체 공개 메모를 모두 조회한다.")
+    @Test
+    public void 전체_메모_조회_통합_테스트() throws Exception {
+        // given
+        // 1. @BeforeEach에서 이미 공개글 1개, 비밀글 1개를 저장한 상태
+        // 2. 공개글만 찾아야 함
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/home/memos")
+                .contentType(MediaType.APPLICATION_JSON));
+
+        // then
+        resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].content").value("[공개글] 기존 테스트 데이터 1"));
+    }
+
+    @DisplayName("메모 아이디를 받아 해당 메모를 조회한다.")
+    @Test
+    public void 특정_메모_조회_통합_테스트() throws Exception {
+        // given
+        Long targetId = memoRepository.findAll().get(0).getId();
+        String expectedContent = memoRepository.findById(targetId).get().getContent();
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/home/memos/{targetId}", targetId));
+
+        // then
+        resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.memoId").value(targetId))
+                .andExpect(jsonPath("$.content").value(expectedContent));
+    }
+
+    @DisplayName("메모 아이디를 받아 해당 메모를 삭제한다.")
+    @Test
+    public void 메모_삭제_통합_테스트() throws Exception {
+        // given
+        Long targetId = publicMemo.getId();
+
+        // when
+        ResultActions resultActions = mockMvc.perform(delete("/home/memos/{targetId}", targetId));
+
+        // then
+        resultActions.andExpect(status().isNoContent());
+        assertThat(memoRepository.findById(targetId)).isEqualTo(Optional.empty());
     }
 }

@@ -145,8 +145,8 @@ public class MemoServiceTest {
         Memo memo1 = createMemo(user, MemoScope.PUBLIC, "공개글 1");
         Memo memo2 = createMemo(user, MemoScope.SECRET, "비밀글 1");
 
-        List<Memo> mockPublicMemos = List.of(memo1, memo2);
-        doReturn(mockPublicMemos).when(memoRepository).findAllPublicAndMySecretDesc(user);
+        List<Memo> mockMemos = List.of(memo1, memo2);
+        doReturn(mockMemos).when(memoRepository).findAllDesc();
 
         // when
         final List<MemoListResponseDto> memoListResponseDtos = memoService.findAllDesc(sessionUser);

@@ -27,17 +27,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -47,7 +44,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class MemoIntegrationTest {
     private User user;
     private Memo publicMemo;
-    private Memo secretMemo;
 
     @Autowired
     private MemoRepository memoRepository;
@@ -68,8 +64,8 @@ public class MemoIntegrationTest {
                 .build();
 
         user = User.builder()
-                .name("홍길동")
-                .email("gildong@woowa.com")
+                .name("사용자")
+                .email("user@test.com")
                 .role(Role.USER)
                 .build();
 
@@ -83,7 +79,7 @@ public class MemoIntegrationTest {
                 .build()
         );
 
-        secretMemo = memoRepository.save(Memo.builder()
+        memoRepository.save(Memo.builder()
                 .content("[비밀글] 기존 테스트 데이터 2")
                 .user(user)
                 .scope(MemoScope.SECRET.name())
@@ -131,6 +127,8 @@ public class MemoIntegrationTest {
         assertThat(memo.getScope()).isEqualTo(scope);
         assertThat(memo.getMemoDate()).isEqualTo(date);
     }
+
+    // TODO: 비로그인 유저의 메모 저장 예외 시나리오 추가
 
     @Test
     @WithMockUser(roles = "USER")
@@ -190,23 +188,20 @@ public class MemoIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @DisplayName("전체 공개 메모를 모두 조회한다.")
+    @DisplayName("비로그인 사용자가 전체 공개 메모를 모두 조회한다.")
     @Test
-    @WithMockUser(roles = "USER")
-    public void 전체_메모_조회_통합_테스트() throws Exception {
+    public void 비로그인_사용자_전체_메모_조회_통합_테스트() throws Exception {
         // given
-        // 1. @BeforeEach에서 이미 공개글 1개, 비밀글 1개를 저장한 상태
-        // 2. 공개글만 찾아야 함
-        SessionUser sessionUser = new SessionUser(user);
+        // 1. @BeforeEach에서 이미 공개글 1개, 비밀글 1개가 저장된 상태
+        // 2. 비로그인 사용자이므로 공개글만 열람 가능
 
         // when
         ResultActions resultActions = mockMvc.perform(get("/home/memos")
-                .sessionAttr("user", sessionUser)
                 .contentType(MediaType.APPLICATION_JSON));
 
         // then
         resultActions.andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @DisplayName("메모 아이디를 받아 해당 메모를 조회한다.")
@@ -259,6 +254,8 @@ public class MemoIntegrationTest {
         // then
         assertThat(memoRepository.findById(targetId)).isEqualTo(Optional.empty());
     }
+
+    // TODO: 일반 유저가 남의 글 삭제하는 예외 시나리오 추가
 
     @DisplayName("존재하지 않는 메모 아이디로 메모를 삭제했을 때, 400 Error를 반환하는지 확인한다.")
     @Test

@@ -4,6 +4,7 @@ import com.precourse.openMission.domain.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,8 +25,15 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers("/", "/h2-console/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/home/memos", "/home/memos/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/home/memos").hasRole(Role.USER.name())
+                        .requestMatchers(HttpMethod.PUT, "/home/memos/**").hasRole(Role.USER.name())
+                        .requestMatchers(HttpMethod.DELETE, "/home/memos/**").hasRole(Role.USER.name())
+
+                        .requestMatchers("/home/user/**").hasRole(Role.USER.name())
                         .requestMatchers("/home/admin/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers("/home/user/**", "/home/memos/**").hasRole(Role.USER.name())
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout

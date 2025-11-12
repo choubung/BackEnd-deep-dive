@@ -14,6 +14,9 @@ public class UserService {
 
     @Transactional
     public void deleteUser(SessionUser sessionUser) {
+        if (sessionUser == null) {
+            throw new IllegalArgumentException("세션 정보가 없습니다.");
+        }
         User user = userRepository.findByEmail(sessionUser.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
 

@@ -39,6 +39,6 @@ jobs:
 
     # 5. [수정] Gradle build (Test 포함, 액션 버전 v3로 업그레이드)
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@v3 # v3로 버전 업
+      uses: gradle/gradle-build-action@v3 
       with:
-        arguments: clean build # '-x test' 제거 (이제 테스트가 실행됩니다)
+        arguments: clean build

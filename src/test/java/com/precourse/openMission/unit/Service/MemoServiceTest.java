@@ -1,4 +1,4 @@
-package com.precourse.openMission.unit.Sevice;
+package com.precourse.openMission.unit.Service;
 
 import com.precourse.openMission.config.auth.dto.SessionUser;
 import com.precourse.openMission.domain.memo.Memo;

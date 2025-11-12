@@ -1,4 +1,4 @@
-package com.precourse.openMission.unit.Sevice;
+package com.precourse.openMission.unit.Service;
 
 import com.precourse.openMission.config.auth.dto.SessionUser;
 import com.precourse.openMission.domain.memo.MemoRepository;
@@ -6,7 +6,6 @@ import com.precourse.openMission.domain.user.Role;
 import com.precourse.openMission.domain.user.User;
 import com.precourse.openMission.domain.user.UserRepository;
 import com.precourse.openMission.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

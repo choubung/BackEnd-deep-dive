@@ -24,7 +24,7 @@ public class SecurityConfig {
                         .frameOptions(frameOptions -> frameOptions.disable())
                 )
                 .authorizeHttpRequests((authz) -> authz
-                        .requestMatchers("/", "/h2-console/**").permitAll()
+                        .requestMatchers("/").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/home/memos", "/home/memos/**").permitAll()
 

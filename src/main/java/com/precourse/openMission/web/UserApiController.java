@@ -20,12 +20,15 @@ public class UserApiController {
 
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @DeleteMapping("/me")
-    public void deleteUser(@LoginUser SessionUser user){
+    public void deleteUser(@LoginUser SessionUser user) {
         if (user == null) {
             throw new IllegalArgumentException("로그인이 필요합니다.");
         }
 
-        userService.deleteUser(user);
-        session.invalidate();
+        try {
+            userService.deleteUser(user);
+        } finally {
+            session.invalidate();
+        }
     }
 }

@@ -255,7 +255,25 @@ public class MemoIntegrationTest {
         assertThat(memoRepository.findById(targetId)).isEqualTo(Optional.empty());
     }
 
-    // TODO: 일반 유저가 남의 글 삭제하는 예외 시나리오 추가
+    @DisplayName("로그인 사용자가 타인의 메모를 삭제하려하면 BadRequest가 응답된다.")
+    @Test
+    @WithMockUser(roles = "USER")
+    public void 로그인_사용자_타인_메모_삭제_통합_예외_테스트() throws Exception {
+        // given
+        SessionUser sessionUser = new SessionUser(User.builder()
+                .name("사용자2")
+                .role(Role.USER)
+                .email("user2@test.com")
+                .build());
+
+        Long memoId = publicMemo.getId();
+
+        // when, then
+        mockMvc.perform(delete("/home/memos/{memoId}", memoId)
+                        .with(csrf())
+                        .sessionAttr("user", sessionUser))
+                .andExpect(status().isBadRequest());
+    }
 
     @DisplayName("존재하지 않는 메모 아이디로 메모를 삭제했을 때, 400 Error를 반환하는지 확인한다.")
     @Test

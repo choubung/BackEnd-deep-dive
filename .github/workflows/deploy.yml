@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "dev" ] 
   pull_request:
-    branches: [ "dev" ]
+    branches: [ "dev" ] 
 
 permissions:
   contents: read
@@ -29,9 +29,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     
-    # [수정] Gradle build (Test 포함, 액션 버전 v3, 환경 변수 주입)
+    # 4Gradle build (Test 포함, 액션 버전 v3, 환경 변수 주입)
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@v4
+      uses: gradle/gradle-build-action@v3
       with:
         arguments: clean build
       env:

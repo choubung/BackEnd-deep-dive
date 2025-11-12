@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/home/memos/**").hasRole(Role.USER.name())
                         .requestMatchers(HttpMethod.DELETE, "/home/memos/**").hasRole(Role.USER.name())
 
-                        .requestMatchers("/home/user/**").hasRole(Role.USER.name())
+                        .requestMatchers("/home/users/**").hasRole(Role.USER.name())
                         .requestMatchers("/home/admin/**").hasRole(Role.ADMIN.name())
                         .anyRequest().authenticated()
                 )

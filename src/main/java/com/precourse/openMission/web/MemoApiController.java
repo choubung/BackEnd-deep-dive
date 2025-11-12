@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/home/memos")
 @RestController
-public class MemoController {
+public class MemoApiController {
     private final MemoService memoService; // 의존성 주입
 
     @PostMapping

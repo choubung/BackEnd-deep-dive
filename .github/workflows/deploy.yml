@@ -43,7 +43,7 @@ jobs:
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }} # 1. [수정] 'PASSWORD'가 아닌 'TOKEN' 사용
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     # Docker 이미지 빌드, 태그, 푸시를 한 번에 처리
     - name: Build, tag, and push Docker image
@@ -54,6 +54,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     steps:
     - name: Deploy to GCP VM
       uses: appleboy/ssh-action@master
@@ -64,8 +65,10 @@ jobs:
         port: 22
 
         script: |
+          TAG=${{ needs.build.outputs.tag }}
+          
           echo "Username is: [${{ secrets.DOCKERHUB_USERNAME }}]"
-          echo "Tag is: [${GITHUB_SHA::7}]"
+          echo "Tag is: [$TAG]"
           
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}
           

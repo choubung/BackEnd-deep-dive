@@ -1,4 +1,4 @@
-FROM openjdk:17-slim-bullseye
+FROM eclipse-temurin:17-jre-bullseye
 
 ARG JAR_FILE=build/libs/*[!plain].jar
 

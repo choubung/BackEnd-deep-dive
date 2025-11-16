@@ -61,7 +61,7 @@ jobs:
         port: 22
 
         script: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/open-mission:${GITHUB_SHA::7}
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}
             
           docker stop memo-app || true
           docker rm memo-app || true
@@ -73,4 +73,4 @@ jobs:
             -e DB_PASSWORD=${{ secrets.GCP_DB_PASSWORD }} \
             -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-            ${{ secrets.DOCKERHUB_USERNAME }}/open-mission:${GITHUB_SHA::7}
+            ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre-bullseye
+FROM eclipse-temurin:17.0.17_10-jre-noble
 
 ARG JAR_FILE=build/libs/*[!plain].jar
 

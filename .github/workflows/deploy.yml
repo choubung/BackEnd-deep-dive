@@ -64,6 +64,9 @@ jobs:
         port: 22
 
         script: |
+          echo "Username is: [${{ secrets.DOCKERHUB_USERNAME }}]"
+          echo "Tag is: [${GITHUB_SHA::7}]"
+          
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}
           
           docker stop memo-app || true

@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17.0.17_10-jre-noble
 
-ARG JAR_FILE=build/libs/*[!plain].jar
+ARG JAR_FILE=build/libs/*.jar
 
 COPY ${JAR_FILE} app.jar
 

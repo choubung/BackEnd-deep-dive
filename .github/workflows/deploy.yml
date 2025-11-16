@@ -51,6 +51,7 @@ jobs:
 
     # Docker 이미지 빌드, 태그, 푸시를 한 번에 처리
     - name: Build, tag, and push Docker image
+      id: docker_build
       run: |
         TAG=${GITHUB_SHA::7}
         echo "tag=$TAG" >> $GITHUB_OUTPUT 

@@ -55,20 +55,22 @@ jobs:
     - name: Deploy to GCP VM
       uses: appleboy/ssh-action@master
       with:
-          host: ${{ secrets.GCP_VM_HOST }}
-          username: ${{ secrets.GCP_VM_USERNAME }}
-          key: ${{ secrets.GCP_VM_SSH_KEY }}
-          script: |
-            docker stop memo-app || true
-            docker rm memo-app || true
+        host: ${{ secrets.GCP_VM_HOST }}
+        username: ${{ secrets.GCP_VM_USERNAME }}
+        key: ${{ secrets.GCP_VM_SSH_KEY }}
+        port: 22
+
+        script: |
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/open-mission:${GITHUB_SHA::7}
             
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/open-mission:${GITHUB_SHA::7}
+          docker stop memo-app || true
+          docker rm memo-app || true
             
-            docker run -d --name memo-app \
-              -p 9090:9090 \
-              -e DB_URL=${{ secrets.DB_URL }} \
-              -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-              -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-              ${{ secrets.DOCKERHUB_USERNAME }}/open-mission:${GITHUB_SHA::7}
+          docker run -d --name memo-app \
+            -p 9090:9090 \
+            -e DB_URL=${{ secrets.GCP_DB_URL }} \
+            -e DB_USERNAME=${{ secrets.GCP_DB_USERNAME }} \
+            -e DB_PASSWORD=${{ secrets.GCP_DB_PASSWORD }} \
+            -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+            -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/open-mission:${GITHUB_SHA::7}

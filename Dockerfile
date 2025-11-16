@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim
+FROM openjdk:17-jdk-slim-bullseye
 
 ARG JAR_FILE=build/libs/*[!plain].jar
 

@@ -34,6 +34,7 @@ jobs:
       uses: gradle/gradle-build-action@v3
       with:
         arguments: clean build
+        cache-disabled: true
       env:
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}

@@ -51,7 +51,10 @@ jobs:
         docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7} .
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}
 
-    # GCP에서 배포
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
     - name: Deploy to GCP VM
       uses: appleboy/ssh-action@master
       with:
@@ -62,10 +65,10 @@ jobs:
 
         script: |
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}
-            
+          
           docker stop memo-app || true
           docker rm memo-app || true
-            
+          
           docker run -d --name memo-app \
             -p 9090:9090 \
             -e DB_URL=${{ secrets.GCP_DB_URL }} \

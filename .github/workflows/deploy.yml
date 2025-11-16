@@ -71,9 +71,9 @@ jobs:
           
           docker run -d --name memo-app \
             -p 9090:9090 \
-            -e DB_URL=${{ secrets.GCP_DB_URL }} \
-            -e DB_USERNAME=${{ secrets.GCP_DB_USERNAME }} \
-            -e DB_PASSWORD=${{ secrets.GCP_DB_PASSWORD }} \
+            -e DB_URL=${{ secrets.DB_URL }} \
+            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}

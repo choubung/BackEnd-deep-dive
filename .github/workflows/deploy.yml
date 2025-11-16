@@ -13,6 +13,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    outputs:
+      tag: ${{ steps.docker_build.outputs.tag }}
+
     steps:
     # 기본 체크아웃
     - name: Checkout
@@ -49,6 +52,9 @@ jobs:
     # Docker 이미지 빌드, 태그, 푸시를 한 번에 처리
     - name: Build, tag, and push Docker image
       run: |
+        TAG=${GITHUB_SHA::7}
+        echo "tag=$TAG" >> $GITHUB_OUTPUT 
+        
         docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7} .
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}
 

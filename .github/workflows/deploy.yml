@@ -31,7 +31,7 @@ jobs:
     
     # 4Gradle build (Test 포함, 액션 버전 v3, 환경 변수 주입)
     - name: Build with Gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/gradle-build-action@v3
       with:
         arguments: clean build
         cache-disabled: true
@@ -71,7 +71,7 @@ jobs:
           echo "Username is: [${{ secrets.DOCKERHUB_USERNAME }}]"
           echo "Tag is: [$TAG]"
           
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:$TAG
           
           docker stop memo-app || true
           docker rm memo-app || true
@@ -83,4 +83,4 @@ jobs:
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-            ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${GITHUB_SHA::7}
+            ${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:$TAG

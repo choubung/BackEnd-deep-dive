@@ -21,9 +21,6 @@ public class SecurityConfig {
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.disable())
-                )
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers("/").permitAll()
 

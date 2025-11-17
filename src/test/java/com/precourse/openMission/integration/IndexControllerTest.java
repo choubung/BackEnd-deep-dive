@@ -37,7 +37,8 @@ public class IndexControllerTest {
     @Test
     public void 메인페이지_로딩() throws Exception {
         // when & then
-        mvc.perform(get("/"))
+        mvc.perform(get("/")
+                        .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("메모 서비스")));
     }

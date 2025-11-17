@@ -7,6 +7,8 @@ import com.precourse.openMission.domain.memo.MemoScope;
 import com.precourse.openMission.domain.user.Role;
 import com.precourse.openMission.domain.user.User;
 import com.precourse.openMission.domain.user.UserRepository;
+import com.precourse.openMission.exception.CustomErrorCode;
+import com.precourse.openMission.exception.RestApiException;
 import com.precourse.openMission.service.MemoService;
 import com.precourse.openMission.web.dto.memo.MemoListResponseDto;
 import com.precourse.openMission.web.dto.memo.MemoResponseDto;
@@ -93,7 +95,8 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(() -> memoService.saveMemo(memoSaveRequestDto, null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.LOGIN_REQUIRED);
     }
 
     @DisplayName("비로그인 사용자가 전체 공개 메모를 조회한다.")
@@ -252,7 +255,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(()-> memoService.findById(memoId, null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.LOGIN_REQUIRED);
     }
 
     @DisplayName("로그인 사용자가 메모 아이디로 타인의 특정 나만보기 메모를 조회했을 때, 예외가 발생한다.")
@@ -271,7 +276,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(()-> memoService.findById(memoId, sessionUser))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.INVALID_USER);
     }
 
     @DisplayName("존재하지 않는 메모 아이디로 메모를 조회했을 때, IllegalArgumentException이 발생한다.")
@@ -284,7 +291,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(() -> memoService.findById(invalidId, new SessionUser(user)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.MEMO_NOT_FOUND);
     }
 
     @DisplayName("로그인한 사용자의 메모 아이디와 MemoUpdateRequestDto(공개범위, 내용, 날짜)를 받아 메모를 업데이트한다.")
@@ -350,7 +359,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(()-> memoService.updateMemo(memoId, memoUpdateRequestDto, sessionUser))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.INVALID_USER);
     }
 
     @DisplayName("비로그인 사용자가 타인의 특정 메모 갱신시 예외가 발생한다.")
@@ -362,7 +373,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(()-> memoService.updateMemo(memoId, memoUpdateRequestDto, null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.LOGIN_REQUIRED);
     }
 
     @DisplayName("존재하지 않는 메모 아이디로 메모를 갱신하려했을 때, IllegalArgumentException이 발생한다.")
@@ -376,7 +389,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(() -> memoService.updateMemo(invalidId, requestDto, new SessionUser(user)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.MEMO_NOT_FOUND);
     }
 
     @DisplayName("로그인한 사용자의 메모 아이디를 받아 해당 메모를 삭제한다.")
@@ -423,7 +438,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(() -> memoService.deleteMemo(memoId, null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.LOGIN_REQUIRED);;
     }
 
     @DisplayName("로그인 사용자가 메모 아이디로 타인의 메모 삭제시 예외가 발생한다.")
@@ -439,7 +456,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(() -> memoService.deleteMemo(memoId, sessionUser))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.INVALID_USER);
     }
 
     @DisplayName("삭제하려는 메모 아이디가 존재하지 않으면 IllegalArgumentException이 발생한다.")
@@ -452,7 +471,9 @@ public class MemoServiceTest {
 
         // when, then
         assertThatThrownBy(() -> memoService.deleteMemo(invalidId, new SessionUser(user)))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.MEMO_NOT_FOUND);
     }
 
     private Memo createMemo(User user, MemoScope scope, String content) {

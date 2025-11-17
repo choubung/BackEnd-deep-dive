@@ -129,6 +129,27 @@ public class MemoIntegrationTest {
     }
 
     // TODO: 비로그인 유저의 메모 저장 예외 시나리오 추가
+    @DisplayName("비로그인 사용자가 메모 저장 시 예외가 발생하며, httpcode 401이 반환된다.")
+    @Test
+    public void 비로그인_사용자_메모_등록시_예외_발생_통합_테스트() throws Exception {
+        // given
+        String content = "테스트";
+        MemoScope scope = MemoScope.PUBLIC;
+        LocalDateTime date = LocalDateTime.of(2025, 11, 10, 14, 57);
+
+        MemoSaveRequestDto requestDto = new MemoSaveRequestDto(content, scope, date);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        String json = objectMapper.writeValueAsString(requestDto);
+
+        // when, then
+        mockMvc.perform(post("/home/memos")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized());
+    }
 
     @Test
     @WithMockUser(roles = "USER")
@@ -185,7 +206,7 @@ public class MemoIntegrationTest {
                         .sessionAttr("user", sessionUser)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @DisplayName("비로그인 사용자가 전체 공개 메모를 모두 조회한다.")
@@ -234,7 +255,7 @@ public class MemoIntegrationTest {
 
         // when, then
         mockMvc.perform(get("/home/memos/{invalidId}", invalidId))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @DisplayName("메모 아이디를 받아 해당 메모를 삭제한다.")
@@ -258,13 +279,17 @@ public class MemoIntegrationTest {
     @DisplayName("로그인 사용자가 타인의 메모를 삭제하려하면 BadRequest가 응답된다.")
     @Test
     @WithMockUser(roles = "USER")
-    public void 로그인_사용자_타인_메모_삭제_통합_예외_테스트() throws Exception {
+    public void 로그인_사용자_타인_메모_삭제시_예외가_발생한다() throws Exception {
         // given
-        SessionUser sessionUser = new SessionUser(User.builder()
+        User temporayUser = User.builder()
                 .name("사용자2")
                 .role(Role.USER)
                 .email("user2@test.com")
-                .build());
+                .build();
+
+        userRepository.save(temporayUser);
+
+        SessionUser sessionUser = new SessionUser(temporayUser);
 
         Long memoId = publicMemo.getId();
 
@@ -275,7 +300,7 @@ public class MemoIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @DisplayName("존재하지 않는 메모 아이디로 메모를 삭제했을 때, 400 Error를 반환하는지 확인한다.")
+    @DisplayName("존재하지 않는 메모 아이디로 메모를 삭제했을 때, Not Found를 반환하는지 확인한다.")
     @Test
     @WithMockUser(roles = "USER")
     void 존재하지_않는_메모_삭제시_예외가_발생한다() throws Exception {
@@ -289,6 +314,6 @@ public class MemoIntegrationTest {
         mockMvc.perform(delete("/home/memos/{invalidId}", invalidId)
                         .with(csrf())
                         .sessionAttr("user", sessionUser))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 }

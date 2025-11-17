@@ -73,7 +73,7 @@ public class UserApiControllerTest {
         verify(userService).deleteUser(sessionUser);
     }
 
-    @DisplayName("비로그인 사용자가 탈퇴 시도시 400 Bad Request가 발생한다.")
+    @DisplayName("비로그인 사용자가 탈퇴 시도시 401 UNAUTHORIZED가 발생한다.")
     @Test
     void 비로그인_사용자_탈퇴_시도시_예외가_발생한다() throws Exception {
         // given
@@ -85,6 +85,6 @@ public class UserApiControllerTest {
         );
 
         // then
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isUnauthorized());
     }
 }

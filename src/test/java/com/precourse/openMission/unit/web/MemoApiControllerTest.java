@@ -12,7 +12,9 @@ import com.precourse.openMission.domain.memo.Memo;
 import com.precourse.openMission.domain.memo.MemoScope;
 import com.precourse.openMission.domain.user.Role;
 import com.precourse.openMission.domain.user.User;
+import com.precourse.openMission.exception.CustomErrorCode;
 import com.precourse.openMission.exception.GlobalExceptionHandler;
+import com.precourse.openMission.exception.RestApiException;
 import com.precourse.openMission.service.MemoService;
 import com.precourse.openMission.web.MemoApiController;
 import com.precourse.openMission.web.dto.memo.MemoListResponseDto;
@@ -116,7 +118,7 @@ public class MemoApiControllerTest {
                 .andExpect(content().string(String.valueOf(expectedMemoId)));
     }
 
-    @DisplayName("비로그인 사용자가 메모를 저장하려할 때, IllegalArgumentException이 발생한다.")
+    @DisplayName("비로그인 사용자가 메모를 저장하려할 때, 401 UNAUTHORIZED을 반환한다.")
     @Test
     void 비로그인_사용자가_메모_저장시_예외가_발생한다() throws Exception {
         // given
@@ -125,7 +127,7 @@ public class MemoApiControllerTest {
         MemoSaveRequestDto memoSaveRequestDto = new MemoSaveRequestDto(content, scope, dateTime);
 
         when(mockSession.getAttribute("user")).thenReturn(null);
-        doThrow(new IllegalArgumentException()).when(memoService).saveMemo(any(MemoSaveRequestDto.class), eq(null));
+        doThrow(new RestApiException(CustomErrorCode.LOGIN_REQUIRED)).when(memoService).saveMemo(any(MemoSaveRequestDto.class), eq(null));
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -139,7 +141,7 @@ public class MemoApiControllerTest {
         );
 
         // then
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isUnauthorized());
     }
 
     @DisplayName("비로그인 사용자가 전체 메모를 조회하면, 전체공개 메모만 반환된다.")
@@ -326,7 +328,7 @@ public class MemoApiControllerTest {
 
     @DisplayName("로그인 사용자가 메모 아이디로 타인의 나만보기 메모를 조회했을 때, 400이 응답된다..")
     @Test
-    void 로그인_사용자_타인_나만보기_메모_조회_테스트() throws Exception {
+    void 로그인_사용자_타인_나만보기_메모_조회시_예외가_발생한다() throws Exception {
         // given
         SessionUser sessionUser = new SessionUser(user);
         when(mockSession.getAttribute("user")).thenReturn(sessionUser);
@@ -336,8 +338,8 @@ public class MemoApiControllerTest {
 
         Memo memo = createMemo(MemoScope.SECRET, adminUser, expectedContent);
         ReflectionTestUtils.setField(memo, "id", 1L);
-        MemoResponseDto responseDto = new MemoResponseDto(memo);
-        doThrow(new IllegalArgumentException()).when(memoService).findById(memoId, sessionUser);
+
+        doThrow(new RestApiException(CustomErrorCode.INVALID_USER)).when(memoService).findById(memoId, sessionUser);
 
         // when, then
         mockMvc.perform(
@@ -351,12 +353,12 @@ public class MemoApiControllerTest {
         // given
         Long memoId = 1L;
         when(mockSession.getAttribute("user")).thenReturn(null);
-        doThrow(new IllegalArgumentException()).when(memoService).findById(memoId, null);
+        doThrow(new RestApiException(CustomErrorCode.LOGIN_REQUIRED)).when(memoService).findById(memoId, null);
 
         // when, then
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/home/memos/{memoId}", memoId)
-        ).andExpect(status().isBadRequest());
+        ).andExpect(status().isUnauthorized());
     }
 
     @DisplayName("존재하지 않는 메모 아이디로 메모를 조회했을 때, 400이 응답된다.")
@@ -367,7 +369,7 @@ public class MemoApiControllerTest {
         when(mockSession.getAttribute("user")).thenReturn(sessionUser);
 
         Long invalidId = 1L;
-        doThrow(new IllegalArgumentException()).when(memoService).findById(eq(invalidId), any(SessionUser.class));
+        doThrow(new RestApiException(CustomErrorCode.MEMO_NOT_FOUND)).when(memoService).findById(eq(invalidId), any(SessionUser.class));
 
         // when
         ResultActions resultActions = mockMvc.perform(
@@ -375,7 +377,7 @@ public class MemoApiControllerTest {
         );
 
         // then
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isNotFound());
     }
 
     @DisplayName("로그인한 사용자의 메모 아이디와 MemoUpdateRequestDto(공개범위, 내용, 날짜)로 메모를 갱신하고, 200을 반환한다.")
@@ -444,7 +446,7 @@ public class MemoApiControllerTest {
         Long memoId = 1L;
         String updatedContent = "갱신 후";
         MemoUpdateRequestDto requestDto = new MemoUpdateRequestDto(updatedContent, MemoScope.PUBLIC, dateTime);
-        doThrow(new IllegalArgumentException()).when(memoService).updateMemo(eq(memoId), any(MemoUpdateRequestDto.class), eq(sessionUser));
+        doThrow(new RestApiException(CustomErrorCode.INVALID_USER)).when(memoService).updateMemo(eq(memoId), any(MemoUpdateRequestDto.class), eq(sessionUser));
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -470,7 +472,7 @@ public class MemoApiControllerTest {
         Long memoId = 1L;
         String updatedContent = "갱신 후";
         MemoUpdateRequestDto requestDto = new MemoUpdateRequestDto(updatedContent, MemoScope.PUBLIC, dateTime);
-        doThrow(new IllegalArgumentException()).when(memoService).updateMemo(eq(memoId), any(MemoUpdateRequestDto.class), eq(null));
+        doThrow(new RestApiException(CustomErrorCode.LOGIN_REQUIRED)).when(memoService).updateMemo(eq(memoId), any(MemoUpdateRequestDto.class), eq(null));
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -484,7 +486,7 @@ public class MemoApiControllerTest {
         );
 
         // then
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isUnauthorized());
     }
 
     @DisplayName("존재하지 않는 메모 아이디로 메모를 갱신하려했을 때, 400 Error를 반환하는지 확인한다.")
@@ -497,7 +499,7 @@ public class MemoApiControllerTest {
         Long invalidId = 1L;
         String updatedContent = "갱신 후";
         MemoUpdateRequestDto requestDto = new MemoUpdateRequestDto(updatedContent, MemoScope.PUBLIC, dateTime);
-        doThrow(new IllegalArgumentException()).when(memoService).updateMemo(eq(invalidId), any(MemoUpdateRequestDto.class), any(SessionUser.class));
+        doThrow(new RestApiException(CustomErrorCode.MEMO_NOT_FOUND)).when(memoService).updateMemo(eq(invalidId), any(MemoUpdateRequestDto.class), any(SessionUser.class));
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -511,7 +513,7 @@ public class MemoApiControllerTest {
         );
 
         // then
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isNotFound());
     }
 
     @DisplayName("로그인한 사용자의 메모 아이디를 받아 해당 메모를 삭제한다.")
@@ -559,7 +561,7 @@ public class MemoApiControllerTest {
         Long othersMemoId = 1L;
         SessionUser sessionUser = new SessionUser(user);
         when(mockSession.getAttribute("user")).thenReturn(sessionUser);
-        doThrow(new IllegalArgumentException()).when(memoService).deleteMemo(othersMemoId, sessionUser);
+        doThrow(new RestApiException(CustomErrorCode.INVALID_USER)).when(memoService).deleteMemo(othersMemoId, sessionUser);
 
         // when
         ResultActions resultActions = mockMvc.perform(
@@ -576,7 +578,7 @@ public class MemoApiControllerTest {
         // give
         Long memoId = 1L;
         when(mockSession.getAttribute("user")).thenReturn(null);
-        doThrow(new IllegalArgumentException()).when(memoService).deleteMemo(memoId, null);
+        doThrow(new RestApiException(CustomErrorCode.LOGIN_REQUIRED)).when(memoService).deleteMemo(memoId, null);
 
         // when
         ResultActions resultActions = mockMvc.perform(
@@ -584,7 +586,7 @@ public class MemoApiControllerTest {
         );
 
         // then
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isUnauthorized());
     }
 
     @DisplayName("존재하지 않는 메모 아이디로 메모를 삭제했을 때, 400 Error를 반환하는지 확인한다.")
@@ -595,7 +597,7 @@ public class MemoApiControllerTest {
         when(mockSession.getAttribute("user")).thenReturn(sessionUser);
 
         Long invalidId = 1L;
-        doThrow(new IllegalArgumentException()).when(memoService).deleteMemo(eq(invalidId), any(SessionUser.class));
+        doThrow(new RestApiException(CustomErrorCode.MEMO_NOT_FOUND)).when(memoService).deleteMemo(eq(invalidId), any(SessionUser.class));
 
         // when
         ResultActions resultActions = mockMvc.perform(
@@ -603,7 +605,7 @@ public class MemoApiControllerTest {
         );
 
         // then
-        resultActions.andExpect(status().isBadRequest());
+        resultActions.andExpect(status().isNotFound());
     }
 
     private Memo createMemo(MemoScope scope, User user, String content) {

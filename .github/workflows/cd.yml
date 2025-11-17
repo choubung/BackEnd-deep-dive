@@ -64,11 +64,14 @@ jobs:
           # Docker Hub에 푸시한 이미지를 지정
           image: '${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/memo-app-repo/backend-deep-dive:${{ env.IMAGE_TAG }}'
 
+          # 9. [핵심] Cloud Run과 GCP SQL을 '내부 터널'로 연결
+          add-cloudsql-instances: ${{ secrets.GCP_SQL_CONNECTION_NAME }}
+
           min_instances: 1
 
           # Cloud Run 컨테이너에 환경 변수 주입
           env_vars: |
-            DB_URL=${{ secrets.DB_URL }}
+            DB_URL=jdbc:mysql://google/mydb?socketFactory=com.google.cloud.sql.mysql.SocketFactory&cloudSqlInstance=${{ secrets.GCP_SQL_CONNECTION_NAME }}&useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}

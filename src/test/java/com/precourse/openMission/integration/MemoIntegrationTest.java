@@ -129,6 +129,27 @@ public class MemoIntegrationTest {
     }
 
     // TODO: 비로그인 유저의 메모 저장 예외 시나리오 추가
+    @DisplayName("비로그인 사용자가 메모 저장 시 예외가 발생하며, httpcode 401이 반환된다.")
+    @Test
+    public void 비로그인_사용자_메모_등록시_예외_발생_통합_테스트() throws Exception {
+        // given
+        String content = "테스트";
+        MemoScope scope = MemoScope.PUBLIC;
+        LocalDateTime date = LocalDateTime.of(2025, 11, 10, 14, 57);
+
+        MemoSaveRequestDto requestDto = new MemoSaveRequestDto(content, scope, date);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        String json = objectMapper.writeValueAsString(requestDto);
+
+        // when, then
+        mockMvc.perform(post("/home/memos")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized());
+    }
 
     @Test
     @WithMockUser(roles = "USER")

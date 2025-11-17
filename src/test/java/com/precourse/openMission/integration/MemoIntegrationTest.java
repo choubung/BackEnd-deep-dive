@@ -281,15 +281,15 @@ public class MemoIntegrationTest {
     @WithMockUser(roles = "USER")
     public void 로그인_사용자_타인_메모_삭제시_예외가_발생한다() throws Exception {
         // given
-        User temprorayUser = User.builder()
+        User temporayUser = User.builder()
                 .name("사용자2")
                 .role(Role.USER)
                 .email("user2@test.com")
                 .build();
 
-        userRepository.save(temprorayUser);
+        userRepository.save(temporayUser);
 
-        SessionUser sessionUser = new SessionUser(temprorayUser);
+        SessionUser sessionUser = new SessionUser(temporayUser);
 
         Long memoId = publicMemo.getId();
 

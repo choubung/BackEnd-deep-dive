@@ -3,8 +3,6 @@ name: CD - Deploy to Google Cloud Run
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
   workflow_dispatch:
 
 permissions:

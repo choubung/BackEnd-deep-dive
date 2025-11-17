@@ -12,6 +12,11 @@ var main = {
         $('#btn-delete').on('click', function () {
             _this.delete();
         });
+
+        $('#btn-logout').on('click', function (e) {
+            e.preventDefault(); // <a> 태그의 링크 이동을 막음
+            _this.logout();
+        });
     },
     save : function () {
         // 1. [수정] DTO에 맞게 데이터 수집
@@ -71,7 +76,7 @@ var main = {
             dataType: 'json',
             contentType:'application/json; charset=utf-8',
             data: JSON.stringify(data),
-            beforeSend : function(xhr) { // 💡 (여기도)
+            beforeSend : function(xhr) {
                 xhr.setRequestHeader(header, token);
             }
         }).done(function() {
@@ -100,8 +105,29 @@ var main = {
         }).fail(function (error) {
             alert(error.responseJSON.message || JSON.stringify(error));
         });
-    }
+    },
 
+    logout : function () {
+        // 9. <meta> 태그에서 CSRF 파라미터 이름과 토큰 값을 읽어옴
+        var token = $("meta[name='_csrf']").attr("content");
+        var paramName = $("meta[name='_csrf_parameter']").attr("content");
+
+        // 10. 동적으로 <form>을 생성
+        var $form = $('<form></form>');
+        $form.attr('action', '/logout');
+        $form.attr('method', 'POST');
+
+        // 11. 폼에 CSRF 토큰(hidden input)을 추가
+        $form.append($('<input/>', {
+            type: 'hidden',
+            name: paramName,
+            value: token
+        }));
+
+        // 12. 폼을 body에 추가하고 즉시 submit
+        $form.appendTo('body');
+        $form.submit();
+    }
 };
 
 main.init();

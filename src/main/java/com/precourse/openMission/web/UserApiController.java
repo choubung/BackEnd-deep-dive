@@ -2,6 +2,8 @@ package com.precourse.openMission.web;
 
 import com.precourse.openMission.config.auth.LoginUser;
 import com.precourse.openMission.config.auth.dto.SessionUser;
+import com.precourse.openMission.exception.CustomErrorCode;
+import com.precourse.openMission.exception.RestApiException;
 import com.precourse.openMission.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +24,7 @@ public class UserApiController {
     @DeleteMapping("/me")
     public void deleteUser(@LoginUser SessionUser user) {
         if (user == null) {
-            throw new IllegalArgumentException("로그인이 필요합니다.");
+            throw new RestApiException(CustomErrorCode.LOGIN_REQUIRED);
         }
 
         try {

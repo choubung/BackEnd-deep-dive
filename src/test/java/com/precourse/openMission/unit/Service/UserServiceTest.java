@@ -5,6 +5,8 @@ import com.precourse.openMission.domain.memo.MemoRepository;
 import com.precourse.openMission.domain.user.Role;
 import com.precourse.openMission.domain.user.User;
 import com.precourse.openMission.domain.user.UserRepository;
+import com.precourse.openMission.exception.CustomErrorCode;
+import com.precourse.openMission.exception.RestApiException;
 import com.precourse.openMission.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,6 +56,8 @@ public class UserServiceTest {
     void 비로그인_사용자_탈퇴_시도시_예외가_발생한다() {
         // when, then
         assertThatThrownBy(() -> userService.deleteUser(null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(RestApiException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.LOGIN_REQUIRED);
     }
 }

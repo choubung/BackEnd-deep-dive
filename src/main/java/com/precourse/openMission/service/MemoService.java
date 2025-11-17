@@ -7,6 +7,8 @@ import com.precourse.openMission.domain.memo.MemoScope;
 import com.precourse.openMission.domain.user.Role;
 import com.precourse.openMission.domain.user.User;
 import com.precourse.openMission.domain.user.UserRepository;
+import com.precourse.openMission.exception.CustomErrorCode;
+import com.precourse.openMission.exception.RestApiException;
 import com.precourse.openMission.web.dto.memo.MemoListResponseDto;
 import com.precourse.openMission.web.dto.memo.MemoResponseDto;
 import com.precourse.openMission.web.dto.memo.MemoSaveRequestDto;
@@ -28,7 +30,7 @@ public class MemoService {
     @Transactional
     public Long saveMemo(MemoSaveRequestDto requestDto, SessionUser sessionUser) {
         if (sessionUser == null) {
-            throw new IllegalArgumentException("로그인해야 합니다.");
+            throw new RestApiException(CustomErrorCode.LOGIN_REQUIRED);
         }
 
         Memo memo = createMemo(requestDto, sessionUser);
@@ -38,21 +40,20 @@ public class MemoService {
 
     // 특정 게시글 조회
     public MemoResponseDto findById(Long id, SessionUser sessionUser) {
-        Memo memo = memoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+        Memo memo = memoRepository.findById(id).orElseThrow(() -> new RestApiException(CustomErrorCode.MEMO_NOT_FOUND));
 
         if (memo.getScope().equals(MemoScope.SECRET)) {
             if (sessionUser == null) {
-                throw new IllegalArgumentException("글을 보려면 로그인해야 합니다.");
+                throw new RestApiException(CustomErrorCode.LOGIN_REQUIRED);
             }
 
             User user = userRepository.findByEmail(sessionUser.getEmail())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                    .orElseThrow(() -> new RestApiException(CustomErrorCode.USER_NOT_FOUND));
 
             if (!user.equals(memo.getUser()) && user.getRole() != Role.ADMIN) {
-                throw new IllegalArgumentException("유효하지 않은 사용자입니다.");
+                throw new RestApiException(CustomErrorCode.INVALID_USER);
             }
         }
-
         return new MemoResponseDto(memo);
     }
 
@@ -61,7 +62,7 @@ public class MemoService {
     public List<MemoListResponseDto> findAllDesc(SessionUser sessionUser) {
         if (sessionUser != null) {
             User user = userRepository.findByEmail(sessionUser.getEmail())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                    .orElseThrow(() -> new RestApiException(CustomErrorCode.USER_NOT_FOUND));
 
             if (user.getRole() == Role.ADMIN) {
                 return memoRepository.findAllDesc().stream()
@@ -96,7 +97,7 @@ public class MemoService {
 
     private Memo createMemo(MemoSaveRequestDto requestDto, SessionUser sessionUser) {
         User user = userRepository.findByEmail(sessionUser.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.USER_NOT_FOUND));
 
         return Memo.builder()
                 .user(user)
@@ -108,15 +109,15 @@ public class MemoService {
 
     private Memo validateMemoIdAndUserId(Long memoId, SessionUser sessionUser) {
         if (sessionUser == null) {
-            throw new IllegalArgumentException("로그인이 필요합니다.");
+            throw new RestApiException(CustomErrorCode.LOGIN_REQUIRED);
         }
 
-        Memo memo = memoRepository.findById(memoId).orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+        Memo memo = memoRepository.findById(memoId).orElseThrow(() -> new RestApiException(CustomErrorCode.MEMO_NOT_FOUND));
         User user = userRepository.findByEmail(sessionUser.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.USER_NOT_FOUND));
 
         if (!memo.getUser().equals(user) && user.getRole() != Role.ADMIN) {
-            throw new IllegalArgumentException("유효한 사용자가 아닙니다.");
+            throw new RestApiException(CustomErrorCode.INVALID_USER);
         }
 
         return memo;

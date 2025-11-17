@@ -2,7 +2,6 @@ package com.precourse.openMission.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -27,14 +26,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgument(final IllegalArgumentException e) {
         log.warn("handleIllegalArgument", e);
-        final ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
+        final ErrorCode errorCode = CustomErrorCode.INVALID_PARAMETER;
         return handleExceptionInternal(errorCode, e.getMessage());
     }
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Object> handleAllException(final Exception ex) {
         log.warn("handleAllException", ex);
-        final ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
+        final ErrorCode errorCode = CustomErrorCode.INTERNAL_SERVER_ERROR;
         return handleExceptionInternal(errorCode);
     }
 
@@ -45,7 +44,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             HttpStatusCode status,
             WebRequest request) {
         log.warn("handleIllegalArgument", ex);
-        final ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
+        final ErrorCode errorCode = CustomErrorCode.INVALID_PARAMETER;
         return handleExceptionInternal(ex, errorCode);
     }
 

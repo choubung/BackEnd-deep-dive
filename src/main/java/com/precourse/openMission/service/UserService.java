@@ -1,6 +1,8 @@
 package com.precourse.openMission.service;
 
 import com.precourse.openMission.config.auth.dto.SessionUser;
+import com.precourse.openMission.exception.RestApiException;
+import com.precourse.openMission.exception.CustomErrorCode;
 import org.springframework.transaction.annotation.Transactional;
 import com.precourse.openMission.domain.user.User;
 import com.precourse.openMission.domain.user.UserRepository;
@@ -15,10 +17,10 @@ public class UserService {
     @Transactional
     public void deleteUser(SessionUser sessionUser) {
         if (sessionUser == null) {
-            throw new IllegalArgumentException("세션 정보가 없습니다.");
+            throw new RestApiException(CustomErrorCode.LOGIN_REQUIRED);
         }
         User user = userRepository.findByEmail(sessionUser.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.USER_NOT_FOUND));
 
         userRepository.delete(user);
     }

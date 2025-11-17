@@ -4,6 +4,7 @@ import com.precourse.openMission.domain.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,8 +19,28 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
 
+    // (운영/배포) 환경 전용 SecurityFilterChain
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Profile("prod")
+    public SecurityFilterChain prodFilterChain(HttpSecurity http) throws Exception {
+        http.requiresChannel(channel -> channel
+                .anyRequest().requiresSecure()
+        );
+
+        commonSecurityConfig(http);
+
+        return http.build();
+    }
+
+    @Bean
+    @Profile("!prod")
+    public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
+        commonSecurityConfig(http);
+
+        return http.build();
+    }
+
+    private void commonSecurityConfig(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers("/").permitAll()
@@ -45,8 +66,6 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService)
                         )
                 );
-
-        return http.build();
     }
 
     @Bean

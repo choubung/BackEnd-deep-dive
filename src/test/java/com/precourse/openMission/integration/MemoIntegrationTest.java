@@ -114,6 +114,7 @@ public class MemoIntegrationTest {
         ResultActions resultActions = mockMvc.perform(post("/home/memos")
                         .with(csrf())
                         .sessionAttr("user", sessionUser)
+                        .secure(true)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk());
@@ -146,6 +147,7 @@ public class MemoIntegrationTest {
         // when, then
         mockMvc.perform(post("/home/memos")
                         .with(csrf())
+                        .secure(true)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isUnauthorized());
@@ -171,6 +173,7 @@ public class MemoIntegrationTest {
         mockMvc.perform(put("/home/memos/{targetId}", targetId)
                         .with(csrf())
                         .sessionAttr("user", sessionUser)
+                        .secure(true)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk());
@@ -204,6 +207,7 @@ public class MemoIntegrationTest {
         mockMvc.perform(put("/home/memos/{invalidId}", invalidId)
                         .with(csrf())
                         .sessionAttr("user", sessionUser)
+                        .secure(true)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isNotFound());
@@ -218,6 +222,7 @@ public class MemoIntegrationTest {
 
         // when
         ResultActions resultActions = mockMvc.perform(get("/home/memos")
+                .secure(true)
                 .contentType(MediaType.APPLICATION_JSON));
 
         // then
@@ -237,6 +242,7 @@ public class MemoIntegrationTest {
 
         // when
         ResultActions resultActions = mockMvc.perform(get("/home/memos/{targetId}", targetId)
+                .secure(true)
                 .sessionAttr("user", sessionUser));
 
         // then
@@ -254,7 +260,8 @@ public class MemoIntegrationTest {
         Long invalidId = publicMemo.getId();
 
         // when, then
-        mockMvc.perform(get("/home/memos/{invalidId}", invalidId))
+        mockMvc.perform(get("/home/memos/{invalidId}", invalidId)
+                        .secure(true))
                 .andExpect(status().isNotFound());
     }
 
@@ -269,7 +276,8 @@ public class MemoIntegrationTest {
         // when
         mockMvc.perform(delete("/home/memos/{targetId}", targetId)
                         .with(csrf())
-                        .sessionAttr("user", sessionUser))
+                        .sessionAttr("user", sessionUser)
+                        .secure(true))
                 .andExpect(status().isNoContent());
 
         // then
@@ -296,7 +304,8 @@ public class MemoIntegrationTest {
         // when, then
         mockMvc.perform(delete("/home/memos/{memoId}", memoId)
                         .with(csrf())
-                        .sessionAttr("user", sessionUser))
+                        .sessionAttr("user", sessionUser)
+                        .secure(true))
                 .andExpect(status().isBadRequest());
     }
 
@@ -313,7 +322,8 @@ public class MemoIntegrationTest {
         // when, then
         mockMvc.perform(delete("/home/memos/{invalidId}", invalidId)
                         .with(csrf())
-                        .sessionAttr("user", sessionUser))
+                        .sessionAttr("user", sessionUser)
+                        .secure(true))
                 .andExpect(status().isNotFound());
     }
 }

@@ -1,0 +1,75 @@
+name: CD - Deploy to Google Cloud Run
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: 'read'
+  id-token: 'write'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run chmod to make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 테스트와 빌드를 실행
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: clean build
+          cache-disabled: true
+          java-version: '17'
+          distribution: 'temurin'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+
+      # Google Cloud (GCP) 인증
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      # Artifact Registry에 Docker를 인증
+      - name: Configure Docker client
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+
+      # Docker 이미지 빌드,푸시
+      - name: Build and push Docker image
+        id: docker_build
+        run: |
+          TAG=${GITHUB_SHA::7}
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+          
+          IMAGE_PATH="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/memo-app-repo/backend-deep-dive:$TAG"
+        
+          docker build -t $IMAGE_PATH .
+          docker push $IMAGE_PATH
+
+      # Google Cloud Run에 배포
+      - name: Deploy to Cloud Run
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: 'memo-app'
+          region: ${{ secrets.GCP_REGION }}
+
+          # Docker Hub에 푸시한 이미지를 지정
+          image: '${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/memo-app-repo/backend-deep-dive:${{ env.IMAGE_TAG }}'
+
+          min_instances: 1
+
+          # Cloud Run 컨테이너에 환경 변수 주입
+          env_vars: |
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}

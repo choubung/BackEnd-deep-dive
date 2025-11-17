@@ -1,0 +1,32 @@
+name: Java CI on dev branch
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run chmod to make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle (and run tests)
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: clean build
+          cache-disabled: true # 캐시 오류 방지
+          java-version: '17'
+          distribution: 'temurin'
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}

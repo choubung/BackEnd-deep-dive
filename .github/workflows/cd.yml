@@ -72,6 +72,8 @@ jobs:
           # Docker Hub에 푸시한 이미지를 지정
           image: 'docker.io/${{ secrets.DOCKERHUB_USERNAME }}/backend-deep-dive:${{ env.IMAGE_TAG }}'
 
+          min_instances: 1
+
           # Cloud Run 컨테이너에 환경 변수 주입
           env_vars: |
             DB_URL=${{ secrets.DB_URL }}

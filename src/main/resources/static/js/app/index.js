@@ -27,12 +27,18 @@ var main = {
             return;
         }
 
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+
         $.ajax({
             type: 'POST',
             url: '/home/memos', // 2. [수정] MemoController URL
             dataType: 'json',
             contentType:'application/json; charset=utf-8',
-            data: JSON.stringify(data)
+            data: JSON.stringify(data),
+            beforeSend : function(xhr) {
+                xhr.setRequestHeader(header, token);
+            }
         }).done(function() {
             alert('메모가 등록되었습니다.');
             window.location.href = '/';
@@ -56,13 +62,18 @@ var main = {
         }
 
         var id = $('#id').val();
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
 
         $.ajax({
             type: 'PUT',
             url: '/home/memos/'+id, // 5. [수정] MemoController URL
             dataType: 'json',
             contentType:'application/json; charset=utf-8',
-            data: JSON.stringify(data)
+            data: JSON.stringify(data),
+            beforeSend : function(xhr) { // 💡 (여기도)
+                xhr.setRequestHeader(header, token);
+            }
         }).done(function() {
             alert('메모가 수정되었습니다.');
             window.location.href = '/';
@@ -72,12 +83,17 @@ var main = {
     },
     delete : function () {
         var id = $('#id').val();
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
 
         $.ajax({
             type: 'DELETE',
             url: '/home/memos/'+id, // 6. [수정] MemoController URL
             dataType: 'json',
-            contentType:'application/json; charset=utf-8'
+            contentType:'application/json; charset=utf-8',
+            beforeSend : function(xhr) { // 💡 (여기도)
+                xhr.setRequestHeader(header, token);
+            }
         }).done(function() {
             alert('메모가 삭제되었습니다.');
             window.location.href = '/';

@@ -76,7 +76,7 @@ jobs:
           env_vars: |
             SPRING_PROFILES_ACTIVE=prod
             
-            DB_URL=jdbc:mysql://google/mydb?socketFactory=com.google.cloud.sql.mysql.SocketFactory&cloudSqlInstance=${{ secrets.GCP_SQL_CONNECTION_NAME }}&useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+            DB_URL=jdbc:mysql:///mydb?socketFactory=com.google.cloud.sql.mysql.SocketFactory&cloudSqlInstance=${{ secrets.GCP_SQL_CONNECTION_NAME }}&useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}

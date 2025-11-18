@@ -20,13 +20,17 @@ jobs:
       - name: Run chmod to make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
       - name: Build with Gradle (and run tests)
         uses: gradle/gradle-build-action@v3
         with:
           arguments: clean build
           cache-disabled: true # 캐시 오류 방지
-          java-version: '21'
-          distribution: 'temurin'
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}

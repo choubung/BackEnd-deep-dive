@@ -25,7 +25,7 @@ jobs:
         with:
           arguments: clean build
           cache-disabled: true # 캐시 오류 방지
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}

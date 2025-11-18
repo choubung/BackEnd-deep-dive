@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17.0.17_10-jre-noble
+FROM eclipse-temurin:21.0.9_10-jre-ubi9-minimal
 
 ARG JAR_FILE=build/libs/*.jar
 
